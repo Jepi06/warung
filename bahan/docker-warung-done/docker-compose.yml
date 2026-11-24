@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    container_name: warung-app
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_URL: http://localhost:8085
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: warung
+      DB_USERNAME: warung
+      DB_PASSWORD: rahasia
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: warung-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: warung
+      MYSQL_USER: warung
+      MYSQL_PASSWORD: rahasia
+      MYSQL_ROOT_PASSWORD: rootrahasia
+    ports:
+      - "3307:3306"   # untuk phpMyAdmin / aplikasi lain di komputer ini
+    volumes:
+      - warung-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootrahasia"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  warung-db:
